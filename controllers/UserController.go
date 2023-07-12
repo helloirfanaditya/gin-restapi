@@ -3,73 +3,55 @@ package controllers
 import (
 	"fmt"
 	"trawlcode/models"
+	"trawlcode/repositories"
 	"trawlcode/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
 func Index(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-	var users []models.User
-	db.Find(&users)
+	var u []models.User
+	users := repositories.GetUser(u)
 
 	c.JSON(200, utils.ResSuccess(200, users))
 }
 
 func Find(c *gin.Context) {
 	var req models.UserFind
-	var user models.User
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, utils.ResError(400, "Invalid ID  / ID Must be Integer"))
 		return
 	}
+	getUser, err := repositories.FindUser(req)
 
-	db := c.MustGet("db").(*gorm.DB)
-	if err := db.Where("id = ?", req.ID).First(&user).Error; err != nil {
-		c.JSON(400, utils.ResError(400, "User Not Found !"))
+	if err != nil {
+		c.JSON(400, utils.ResError(400, "Row Not Found"))
 		return
 	}
 
-	c.JSON(200, utils.ResSuccess(200, user))
+	c.JSON(200, utils.ResSuccess(200, getUser))
 
 }
 
 func Update(c *gin.Context) {
 	var req models.UserUpdate
-	var user models.User
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, utils.ResError(400, fmt.Sprintf("Invalid Request : %s", err.Error())))
 		return
 	}
+	updateUser, err := repositories.UpdateUser(req)
 
-	db := c.MustGet("db").(*gorm.DB)
-
-	if err := db.Where("id = ?", req.ID).First(&user).Error; err != nil {
-		c.JSON(400, utils.ResError(400, fmt.Sprintf("Failed to Update Because : %s", err.Error())))
+	if err != nil {
+		c.JSON(400, utils.ResError(400, err.Error()))
 		return
 	}
-
-	user.Name = req.Name
-	user.Email = req.Email
-	if req.Password != "" {
-		var passwordHashed, err = utils.Hash(req.Password)
-		if err != nil {
-			c.JSON(500, utils.ResError(500, fmt.Sprintf("Hashing password Fail : %s", err.Error())))
-		}
-		user.Password = passwordHashed
-	}
-
-	db.Save(&user)
-
-	c.JSON(200, utils.ResSuccess(200, user))
+	c.JSON(200, utils.ResSuccess(200, updateUser))
 }
 
 func Create(c *gin.Context) {
 	var req models.UserCreate
-
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, utils.ResError(400, fmt.Sprintf("Invalid request : %s", err.Error())))
 		return
@@ -86,34 +68,34 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	user := models.User{
-		Name:     req.Name,
-		Email:    req.Email,
-		Password: passwordHashed,
-	}
-	db := c.MustGet("db").(*gorm.DB)
-	db.Create(&user)
+	req.Password = passwordHashed
 
-	c.JSON(200, utils.ResSuccess(200, "success created"))
+	err = repositories.CreateUser(req)
+	if err != nil {
+		c.JSON(500, utils.ResError(500, fmt.Sprintf("Hashing password Fail : %s", err.Error())))
+		return
+	}
+
+	c.JSON(200, utils.ResSuccess(200, map[string]interface{}{
+		"message": "success created",
+	}))
 }
 
 func Delete(c *gin.Context) {
 	var req models.UserFind
-	var user models.User
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, utils.ResError(400, fmt.Sprintf("invalid request : %s", err.Error())))
 		return
 	}
 
-	db := c.MustGet("db").(*gorm.DB)
+	msg, err := repositories.DeleteUser(req)
 
-	if err := db.Where("id = ?", req.ID).First(&user).Error; err != nil {
-		c.JSON(400, utils.ResError(400, "User Not Found"))
+	if err != nil {
+		c.JSON(400, utils.ResError(400, err.Error()))
 		return
 	}
-	db.Delete(&user)
 
-	c.JSON(200, utils.ResSuccess(200, "Deleted !"))
+	c.JSON(200, utils.ResSuccess(200, msg))
 
 }

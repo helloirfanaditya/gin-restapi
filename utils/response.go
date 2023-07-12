@@ -1,15 +1,16 @@
 package utils
 
-import (
-	"github.com/gin-gonic/gin"
-)
-
 type ResponseError struct {
 	Code    int    `json:"code,omitempty" binding:"omitempty"`
 	Message string `json:"message,omitempty" binding:"omitempty"`
 	Data    struct {
 		Message string `json:"message,omitempty" binding:"omitempty"`
 	} `json:"data,omitempty" binding:"omitempty"`
+}
+type ResponseSuccess struct {
+	Code    int         `json:"code,omitempty" binding:"omitempty"`
+	Message string      `json:"message,omitempty" binding:"omitempty"`
+	Data    interface{} `json:"data"`
 }
 
 func ResError(code int, data interface{}) ResponseError {
@@ -24,9 +25,10 @@ func ResError(code int, data interface{}) ResponseError {
 	}
 }
 
-func ResSuccess(code int, data interface{}) gin.H {
-	return gin.H{
-		"code": code,
-		"data": data,
+func ResSuccess(code int, data interface{}) ResponseSuccess {
+	return ResponseSuccess{
+		Code:    code,
+		Message: "success",
+		Data:    data,
 	}
 }

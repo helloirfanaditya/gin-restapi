@@ -1,24 +1,28 @@
 package routes
 
 import (
+	AuthController "trawlcode/controllers"
 	UserController "trawlcode/controllers"
+	"trawlcode/middlewares"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 )
 
-func SetupRoute(db *gorm.DB) *gin.Engine {
+func SetupRoute() *gin.Engine {
 	r := gin.Default()
-	r.Use(func(c *gin.Context) {
-		c.Set("db", db)
-	})
+
+	// Authentication
+	authenticationRoute := r.Group("", middlewares.Logger())
+
+	r.POST("/login", AuthController.Login)
+	r.POST("/register", AuthController.Register)
 
 	// Route User
-	r.GET("/users", UserController.Index)
-	r.GET("/user", UserController.Find)
-	r.POST("/user/update", UserController.Update)
-	r.POST("/user/create", UserController.Create)
-	r.POST("/user/delete", UserController.Delete)
+	authenticationRoute.GET("/users", UserController.Index)
+	authenticationRoute.GET("/user", UserController.Find)
+	authenticationRoute.POST("/user/update", UserController.Update)
+	authenticationRoute.POST("/user/create", UserController.Create)
+	authenticationRoute.POST("/user/delete", UserController.Delete)
 
 	return r
 }

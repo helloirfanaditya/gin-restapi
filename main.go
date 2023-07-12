@@ -2,13 +2,13 @@ package main
 
 import (
 	"trawlcode/database"
-	"trawlcode/models"
 	"trawlcode/routes"
 )
 
 func main() {
-	db := database.SetupDB()
-	db.AutoMigrate(&models.User{})
-	r := routes.SetupRoute(db)
+	database.SetupDB()
+	defer database.Close()
+	// db.AutoMigrate(&models.User{})
+	r := routes.SetupRoute()
 	r.Run(":1234")
 }

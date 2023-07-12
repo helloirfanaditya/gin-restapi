@@ -8,7 +8,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func SetupDB() *gorm.DB {
+func SetupDB() {
 	U := "root"
 	PS := ""
 	H := "localhost"
@@ -22,5 +22,10 @@ func SetupDB() *gorm.DB {
 		defer db.Close()
 		utils.ResError(500, err.Error())
 	}
-	return db
+
+	Db = db
+}
+
+func Close() {
+	Db.Close()
 }
