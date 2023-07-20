@@ -8,7 +8,6 @@ import (
 func main() {
 	database.SetupDB()
 	defer database.Close()
-	// db.AutoMigrate(&models.User{})
 	r := routes.SetupRoute()
 	r.Run(":1234")
 }

@@ -8,9 +8,33 @@ import (
 	"trawlcode/utils"
 )
 
+type Result struct {
+	ID        uint   `json:"id"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"UpdatedAt"`
+}
+
 func GetUser(payload []models.User) interface{} {
+	var result []Result
+
 	database.Db.Find(&payload)
-	return payload
+
+	for _, data := range payload {
+		r := Result{
+			ID:        data.ID,
+			Name:      data.Name,
+			Email:     data.Email,
+			CreatedAt: data.CreatedAt.Format("January 2, 2006"),
+			UpdatedAt: data.UpdatedAt.Format("January 2, 2006"),
+		}
+		result = append(result, r)
+	}
+	if len(result) == 0 {
+		return []string{}
+	}
+	return result
 }
 
 func CreateUser(payload models.UserCreate) error {

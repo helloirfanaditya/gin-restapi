@@ -57,19 +57,19 @@ func LoginCheck(email string, password string) (string, error) {
 	row := database.Db.Where("email = ?", email).First(&user)
 
 	if row.Error != nil {
-		return "", errors.New("Error Bang 57")
+		return "", errors.New("Wrong Email")
 	}
 
 	err = VerifyPassword(password, user.Password)
 
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		return "", errors.New("wrong email / password")
+		return "", errors.New("wrong Password")
 	}
 
 	token, err := utils.GenerateJWT(user.ID)
 
 	if err != nil {
-		return "", errors.New("Error Bang 70: " + err.Error())
+		return "", errors.New("Cannot generate JWT : " + err.Error())
 	}
 
 	return token, err
@@ -89,4 +89,9 @@ func getUser(id float64) (User, error) {
 		return user, find.Error
 	}
 	return user, nil
+}
+
+type AuthRequest struct {
+	Email    string `form:"email" json:"email" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required"`
 }

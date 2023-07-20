@@ -2,6 +2,7 @@ package routes
 
 import (
 	AuthController "trawlcode/controllers"
+	PostController "trawlcode/controllers"
 	UserController "trawlcode/controllers"
 	"trawlcode/middlewares"
 
@@ -18,11 +19,13 @@ func SetupRoute() *gin.Engine {
 	r.POST("/register", AuthController.Register)
 
 	// Route User
-	authenticationRoute.GET("/users", UserController.Index)
+	r.GET("/users", UserController.Index)
 	authenticationRoute.GET("/user", UserController.Find)
 	authenticationRoute.POST("/user/update", UserController.Update)
-	authenticationRoute.POST("/user/create", UserController.Create)
+	r.POST("/user/create", UserController.Create)
 	authenticationRoute.POST("/user/delete", UserController.Delete)
 
+	// Post Route
+	authenticationRoute.GET("/posts", PostController.IndexPosts)
 	return r
 }
